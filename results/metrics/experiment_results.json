@@ -1,0 +1,50 @@
+{
+  "backtest": {
+    "AAPL": {
+      "total_return": -0.040435084184683556,
+      "annualized_return": -0.046588095442724575,
+      "volatility": 0.03704885156038391,
+      "sharpe_ratio": -1.7973052507227185,
+      "max_drawdown": -0.046616104075740496,
+      "calmar_ratio": -0.9993991640105657,
+      "win_rate": 0.4240506329113924,
+      "num_trades": 316,
+      "final_value": 95956.49158153165
+    },
+    "MSFT": {
+      "total_return": -0.04186300271868759,
+      "annualized_return": -0.048227787890494755,
+      "volatility": 0.03203977706511175,
+      "sharpe_ratio": -2.129471367788894,
+      "max_drawdown": -0.05336804730891876,
+      "calmar_ratio": -0.9036828275040715,
+      "win_rate": 0.37341772151898733,
+      "num_trades": 316,
+      "final_value": 95813.69972813124
+    }
+  },
+  "comparison": {
+    "Hybrid_AAPL": {
+      "total_return": -0.040435084184683556,
+      "annualized_return": -0.046588095442724575,
+      "volatility": 0.03704885156038391,
+      "sharpe_ratio": -1.7973052507227185,
+      "max_drawdown": -0.046616104075740496,
+      "calmar_ratio": -0.9993991640105657,
+      "win_rate": 0.4240506329113924,
+      "num_trades": 316,
+      "final_value": 95956.49158153165
+    },
+    "Hybrid_MSFT": {
+      "total_return": -0.04186300271868759,
+      "annualized_return": -0.048227787890494755,
+      "volatility": 0.03203977706511175,
+      "sharpe_ratio": -2.129471367788894,
+      "max_drawdown": -0.05336804730891876,
+      "calmar_ratio": -0.9036828275040715,
+      "win_rate": 0.37341772151898733,
+      "num_trades": 316,
+      "final_value": 95813.69972813124
+    }
+  }
+}
