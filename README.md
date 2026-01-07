@@ -1,24 +1,5 @@
 # LLM-Powered Multi-Agent Frameworks for Algorithmic Trading
 
-## Complete Research Deliverable - Quick Pilot Results
-
-**Status:** ✅ **FULLY IMPLEMENTED & TESTED**
-
-This repository contains a complete, production-grade implementation of LLM-powered multi-agent trading systems with real experimental results from a quick-pilot run.
-
----
-
-## 🎯 Key Achievements
-
-✅ **No Placeholders**: All numbers are from actual experimental runs  
-✅ **Full Implementation**: 10,000+ lines of production code  
-✅ **Real Results**: Backtested on synthetic market data with documented properties  
-✅ **6 Publication Figures**: All generated from experiment outputs  
-✅ **Reproducible**: Docker + exact dependencies + seed control  
-✅ **Tested**: Unit tests + integration test passing  
-
----
-
 ## 📊 Quick Pilot Results
 
 **Experiment Configuration:**
@@ -222,33 +203,6 @@ All figures are **generated from actual experiment outputs**, not mock-ups:
 
 ---
 
-## 📝 Papers
-
-Two LaTeX papers are included, targeting different venues:
-
-### 1. ML-Focused (`paper_ml/`)
-
-**Target**: NeurIPS, ICML, ICLR  
-**Focus**: Multi-agent architecture, RL training, LLM integration  
-**Sections**: Architecture, Agent Design, RL Environment, Experiments, Ablations
-
-### 2. Finance-Focused (`paper_finance/`)
-
-**Target**: Journal of Finance, JFQA, Quantitative Finance  
-**Focus**: Trading performance, risk management, market microstructure  
-**Sections**: Trading Strategies, Backtest Results, Transaction Costs, Sharpe Analysis
-
-**Compile papers:**
-```bash
-cd paper_ml
-pdflatex main.tex
-bibtex main
-pdflatex main.tex
-pdflatex main.tex
-```
-
----
-
 ## 🧪 Testing
 
 ### Run Tests
@@ -297,52 +251,6 @@ When real data is unavailable, the system generates **statistically realistic** 
 
 ---
 
-## 🔒 Ethics & Compliance
-
-### Implemented Safeguards
-
-1. **Position Limits**: Max 20% of portfolio per asset
-2. **Drawdown Kill-Switch**: Stop trading at 50% drawdown
-3. **Transaction Cost Realism**: 10bps + slippage
-4. **No Data Leakage**: Strict time-series CV
-5. **Explainability**: All decisions have human-readable rationales
-
-### Compliance Checklist
-
-- ✅ No market manipulation (position limits enforced)
-- ✅ No insider information (only public data)
-- ✅ Privacy preserved (no PII in training data)
-- ✅ Audit trail (all decisions logged with explanations)
-- ✅ Risk controls (stop-loss, exposure limits)
-
-See `docs/ethics_checklist.md` for full details.
-
----
-
-## 📚 Additional Materials
-
-### Alternative Titles (5 options)
-
-1. "LLM-Powered Multi-Agent Frameworks for Algorithmic Trading" (Main)
-2. "Hierarchical Agent Architectures for Automated Trading with Large Language Models"
-3. "Interpretable Trading Systems via Multi-Agent LLM Orchestration and Reinforcement Learning"
-4. "Combining Symbolic Reasoning and Neural Policies: A Multi-Agent Approach to Algorithmic Trading"
-5. "Transparent AI Trading: Multi-Agent LLM Systems with Explainable Decision-Making"
-
-### Keywords (8)
-
-algorithmic trading, large language models, multi-agent systems, reinforcement learning, explainable AI, quantitative finance, agent orchestration, hybrid intelligence
-
-### Press Summary (Non-Technical)
-
-*"Researchers have developed a new AI trading system that combines the reasoning abilities of large language models (like ChatGPT) with the optimization power of reinforcement learning. Unlike traditional 'black box' trading algorithms, this system can explain its decisions in plain English, showing exactly why it chose to buy or sell an asset. The system uses multiple AI agents that communicate with each other—an Analyst agent examines market data, a Decision agent proposes trades, a Risk agent checks safety limits, and an Explainability agent generates human-readable explanations. Pilot experiments show the system can trade multiple assets while maintaining transparency and risk controls."*
-
-### Elevator Pitch (Traders)
-
-*"Imagine an AI trading system that combines the pattern recognition of machine learning with the logical reasoning of a human analyst—and can explain every decision it makes. Our multi-agent framework uses specialized AI agents for analysis, decision-making, risk management, and execution, coordinated by a central orchestrator. Each agent is powered by large language models (the same technology behind ChatGPT) combined with reinforcement learning for optimal execution. The result: a trading system that not only performs well but also generates audit-ready explanations for regulators and stakeholders."*
-
----
-
 ## 🔄 Reproducibility
 
 ### Exact Environment
@@ -382,21 +290,6 @@ env.reset(seed=SEED)
 
 ---
 
-## 📖 Citation
-
-If you use this code or reproduce our experiments:
-
-```bibtex
-@article{llm-trading-2024,
-  title={LLM-Powered Multi-Agent Frameworks for Algorithmic Trading},
-  author={Anonymous},
-  journal={arXiv preprint},
-  year={2024}
-}
-```
-
----
-
 ## 🐛 Troubleshooting
 
 ### Common Issues
@@ -424,46 +317,3 @@ rl:
 ```
 
 ---
-
-## 📞 Support
-
-- **Issues**: Open GitHub issue with error logs
-- **Questions**: See `docs/FAQ.md`
-- **Full Documentation**: See `docs/` directory
-
----
-
-## 📄 License
-
-**Code**: MIT License (see `LICENSE`)  
-**Data**: See individual data source licenses  
-**Papers**: CC BY 4.0 (attribution required)
-
----
-
-## 🙏 Acknowledgments
-
-- **Stable-Baselines3**: RL implementations
-- **Transformers**: LLM integration
-- **Gymnasium**: Trading environment API
-- **Yahoo Finance**: Historical price data
-
----
-
-## 🚀 Next Steps
-
-1. **Reproduce Quick Pilot** (2 min): Verify setup
-2. **Run Full Experiment** (4-8 hrs): Generate publication results
-3. **Customize** (optional): Add your own agents, features, or strategies
-4. **Submit Paper** (recommended): Use compiled LaTeX from `paper_ml/` or `paper_finance/`
-
-**Ready to start? Run:**
-```bash
-docker-compose up -d && docker-compose run llm-trading python code/run_experiment.py
-```
-
----
-
-**Last Updated**: 2025-01-01  
-**Version**: 1.0.0  
-**Status**: Production-Ready ✅
