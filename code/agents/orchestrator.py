@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 class AgentRole(Enum):
     """Enumeration of agent roles."""
+
     ANALYST = "analyst"
     DECISION = "decision"
     RISK = "risk"
@@ -29,6 +30,7 @@ class AgentRole(Enum):
 @dataclass
 class AgentMessage:
     """Message passed between agents."""
+
     sender: AgentRole
     receiver: AgentRole
     content: str
@@ -39,6 +41,7 @@ class AgentMessage:
 @dataclass
 class TradingContext:
     """Shared context for all agents."""
+
     ticker: str
     timestamp: pd.Timestamp
     current_price: float
@@ -51,28 +54,22 @@ class TradingContext:
 
 class BaseAgent:
     """Base class for all trading agents."""
-    
+
     def __init__(
-        self,
-        role: AgentRole,
-        llm: LLMWrapper,
-        config: Optional[Dict[str, Any]] = None
+        self, role: AgentRole, llm: LLMWrapper, config: Optional[Dict[str, Any]] = None
     ):
         self.role = role
         self.llm = llm
         self.config = config or {}
         self.message_history: List[AgentMessage] = []
-    
+
     def receive_message(self, message: AgentMessage):
         """Receive and log message."""
         self.message_history.append(message)
         logger.debug(f"{self.role.value} received message from {message.sender.value}")
-    
+
     def send_message(
-        self,
-        receiver: AgentRole,
-        content: str,
-        metadata: Optional[Dict] = None
+        self, receiver: AgentRole, content: str, metadata: Optional[Dict] = None
     ) -> AgentMessage:
         """Create and log outgoing message."""
         message = AgentMessage(
@@ -80,11 +77,11 @@ class BaseAgent:
             receiver=receiver,
             content=content,
             metadata=metadata or {},
-            timestamp=pd.Timestamp.now()
+            timestamp=pd.Timestamp.now(),
         )
         logger.debug(f"{self.role.value} sending message to {receiver.value}")
         return message
-    
+
     def process(self, context: TradingContext) -> AgentMessage:
         """Process context and generate output. To be implemented by subclasses."""
         raise NotImplementedError
@@ -92,115 +89,110 @@ class BaseAgent:
 
 class AnalystAgent(BaseAgent):
     """Analyst agent for market analysis."""
-    
+
     def __init__(self, llm: LLMWrapper, config: Optional[Dict] = None):
         super().__init__(AgentRole.ANALYST, llm, config)
         self.template = PromptTemplate()
-    
+
     def process(self, context: TradingContext) -> AgentMessage:
         """Analyze market conditions and generate insights."""
-        
+
         # Extract relevant features
         indicators = {
-            k: v for k, v in context.features.items()
-            if k in ['rsi', 'macd', 'sma_20', 'sma_50', 'atr', 'bb_width']
+            k: v
+            for k, v in context.features.items()
+            if k in ["rsi", "macd", "sma_20", "sma_50", "atr", "bb_width"]
         }
-        
+
         # Extract sentiment
         sentiment_features = {
-            k: v for k, v in context.features.items()
-            if 'sentiment' in k or 'news' in k
+            k: v for k, v in context.features.items() if "sentiment" in k or "news" in k
         }
-        
+
         # Extract macro features
         macro_features = {
-            k: v for k, v in context.features.items()
-            if k in ['DFF', 'VIXCLS', 'T10Y2Y'] or 'change' in k
+            k: v
+            for k, v in context.features.items()
+            if k in ["DFF", "VIXCLS", "T10Y2Y"] or "change" in k
         }
-        
+
         # Format prompt
         prompt = self.template.format_analysis_prompt(
             ticker=context.ticker,
             current_price=context.current_price,
             indicators=indicators,
             news_sentiment=sentiment_features,
-            macro_context=macro_features
+            macro_context=macro_features,
         )
-        
+
         # Generate analysis
         analysis = self.llm.generate(
-            prompt=prompt,
-            system_prompt=self.template.SYSTEM_PROMPTS["analyst"]
+            prompt=prompt, system_prompt=self.template.SYSTEM_PROMPTS["analyst"]
         )
-        
+
         return self.send_message(
             receiver=AgentRole.DECISION,
             content=analysis,
             metadata={
                 "indicators": indicators,
                 "sentiment": sentiment_features,
-                "macro": macro_features
-            }
+                "macro": macro_features,
+            },
         )
 
 
 class DecisionAgent(BaseAgent):
     """Decision agent for trading actions."""
-    
+
     def __init__(self, llm: LLMWrapper, config: Optional[Dict] = None):
         super().__init__(AgentRole.DECISION, llm, config)
         self.template = PromptTemplate()
         self.max_position = config.get("max_position", 0.2) if config else 0.2
-    
+
     def process(
-        self,
-        context: TradingContext,
-        analysis_message: AgentMessage
+        self, context: TradingContext, analysis_message: AgentMessage
     ) -> Tuple[AgentMessage, Dict[str, Any]]:
         """Make trading decision based on analysis."""
-        
+
         # Get risk limits
         risk_limits = {
             "max_position": self.max_position,
             "max_drawdown": self.config.get("max_drawdown", 0.15),
-            "position_limit": self.config.get("position_limit", 1000)
+            "position_limit": self.config.get("position_limit", 1000),
         }
-        
+
         # Format decision prompt
         prompt = self.template.format_decision_prompt(
             ticker=context.ticker,
             analysis=analysis_message.content,
             current_position=context.position,
             portfolio_value=context.portfolio_value,
-            risk_limits=risk_limits
+            risk_limits=risk_limits,
         )
-        
+
         # Generate decision
         decision_text = self.llm.generate(
-            prompt=prompt,
-            system_prompt=self.template.SYSTEM_PROMPTS["decision"]
+            prompt=prompt, system_prompt=self.template.SYSTEM_PROMPTS["decision"]
         )
-        
+
         # Parse decision
         decision = self._parse_decision(decision_text)
-        
+
         return (
             self.send_message(
-                receiver=AgentRole.RISK,
-                content=decision_text,
-                metadata=decision
+                receiver=AgentRole.RISK, content=decision_text, metadata=decision
             ),
-            decision
+            decision,
         )
-    
+
     def _parse_decision(self, decision_text: str) -> Dict[str, Any]:
         """Parse decision text into structured format."""
         # Simple parsing of "ACTION SIZE" format
         parts = decision_text.strip().split()
-        
+
         action = "HOLD"
         size = 0.0
-        
+
         for part in parts:
             part_upper = part.upper()
             if part_upper in ["BUY", "SELL", "HOLD"]:
@@ -210,53 +202,53 @@ class DecisionAgent(BaseAgent):
                     size = float(part)
                 except ValueError:
                     continue
-        
-        return {
-            "action": action,
-            "size": size,
-            "raw_text": decision_text
-        }
+
+        return {"action": action, "size": size, "raw_text": decision_text}
 
 
 class RiskAgent(BaseAgent):
     """Risk management agent."""
-    
+
     def __init__(self, llm: LLMWrapper, config: Optional[Dict] = None):
         super().__init__(AgentRole.RISK, llm, config)
         self.template = PromptTemplate()
         self.max_position = config.get("max_position", 0.2) if config else 0.2
         self.max_drawdown = config.get("max_drawdown", 0.15) if config else 0.15
-    
+
     def process(
-        self,
-        context: TradingContext,
-        decision_message: AgentMessage
+        self, context: TradingContext, decision_message: AgentMessage
     ) -> Tuple[AgentMessage, bool]:
         """
         Validate decision against risk constraints.
-        
+
         Returns:
             (message, approved) tuple
         """
         decision = decision_message.metadata
-        
+
         # Check position limits
         new_position = context.position
         if decision["action"] == "BUY":
-            new_position += decision["size"] * context.portfolio_value / context.current_price
+            new_position += (
+                decision["size"] * context.portfolio_value / context.current_price
+            )
         elif decision["action"] == "SELL":
-            new_position -= decision["size"] * context.portfolio_value / context.current_price
-        
-        position_pct = abs(new_position * context.current_price / context.portfolio_value)
-        
+            new_position -= (
+                decision["size"] * context.portfolio_value / context.current_price
+            )
+
+        position_pct = abs(
+            new_position * context.current_price / context.portfolio_value
+        )
+
         # Risk checks
         checks = {
             "position_limit": position_pct <= self.max_position,
             "position_positive": new_position >= 0,  # No short selling in this version
         }
-        
+
         approved = all(checks.values())
-        
+
         # Generate risk assessment
         risk_prompt = f"""Assess risk for trading decision:
 
@@ -273,56 +265,59 @@ Approved: {approved}
 
 Provide risk assessment and recommendations.
 """
-        
+
         risk_assessment = self.llm.generate(
-            prompt=risk_prompt,
-            system_prompt=self.template.SYSTEM_PROMPTS["risk"]
+            prompt=risk_prompt, system_prompt=self.template.SYSTEM_PROMPTS["risk"]
         )
-        
+
         return (
             self.send_message(
                 receiver=AgentRole.EXECUTION if approved else AgentRole.DECISION,
                 content=risk_assessment,
-                metadata={"approved": approved, "checks": checks, "new_position": new_position}
+                metadata={
+                    "approved": approved,
+                    "checks": checks,
+                    "new_position": new_position,
+                },
             ),
-            approved
+            approved,
         )
 
 
 class ExecutionAgent(BaseAgent):
     """Trade execution agent."""
-    
+
     def __init__(self, llm: LLMWrapper, config: Optional[Dict] = None):
         super().__init__(AgentRole.EXECUTION, llm, config)
         self.template = PromptTemplate()
-    
+
     def process(
         self,
         context: TradingContext,
         decision_message: AgentMessage,
-        risk_message: AgentMessage
+        risk_message: AgentMessage,
     ) -> Tuple[AgentMessage, Dict[str, Any]]:
         """Execute approved trade."""
-        
+
         decision = decision_message.metadata
         new_position = risk_message.metadata["new_position"]
-        
+
         # Calculate order details
         shares_to_trade = abs(new_position - context.position)
-        
+
         # Simulate execution with slippage
         slippage = np.random.normal(0, 0.001)  # 10 bps average slippage
         execution_price = context.current_price * (1 + slippage)
-        
+
         execution_details = {
             "action": decision["action"],
             "shares": shares_to_trade,
             "price": execution_price,
             "slippage": slippage,
             "timestamp": context.timestamp,
-            "order_id": f"ORD-{context.timestamp.strftime('%Y%m%d%H%M%S')}"
+            "order_id": f"ORD-{context.timestamp.strftime('%Y%m%d%H%M%S')}",
         }
-        
+
         # Generate execution report
         exec_prompt = f"""Report trade execution:
 
@@ -334,104 +329,104 @@ Order ID: {execution_details['order_id']}
 
 Provide brief execution summary.
 """
-        
+
         exec_report = self.llm.generate(
-            prompt=exec_prompt,
-            system_prompt=self.template.SYSTEM_PROMPTS["execution"]
+            prompt=exec_prompt, system_prompt=self.template.SYSTEM_PROMPTS["execution"]
         )
-        
+
         return (
             self.send_message(
                 receiver=AgentRole.EXPLAINABILITY,
                 content=exec_report,
-                metadata=execution_details
+                metadata=execution_details,
             ),
-            execution_details
+            execution_details,
         )
 
 
 class ExplainabilityAgent(BaseAgent):
     """Explainability agent for decision transparency."""
-    
+
     def __init__(self, llm: LLMWrapper, config: Optional[Dict] = None):
         super().__init__(AgentRole.EXPLAINABILITY, llm, config)
         self.template = PromptTemplate()
-    
+
     def process(
         self,
         context: TradingContext,
         analysis_message: AgentMessage,
         decision_message: AgentMessage,
-        execution_message: AgentMessage
+        execution_message: AgentMessage,
     ) -> AgentMessage:
         """Generate explanation for complete decision chain."""
-        
+
         # Gather evidence
         evidence = {
             "technical_signals": analysis_message.metadata.get("indicators", {}),
             "sentiment": analysis_message.metadata.get("sentiment", {}),
             "macro": analysis_message.metadata.get("macro", {}),
             "decision": decision_message.metadata,
-            "execution": execution_message.metadata
+            "execution": execution_message.metadata,
         }
-        
+
         # Format explanation prompt
         prompt = self.template.format_explanation_prompt(
             decision=f"{decision_message.metadata['action']} {decision_message.metadata['size']}",
             evidence=evidence,
-            context=f"Trading {context.ticker} at ${context.current_price:.2f}"
+            context=f"Trading {context.ticker} at ${context.current_price:.2f}",
         )
-        
+
         # Generate explanation
         explanation = self.llm.generate(
-            prompt=prompt,
-            system_prompt=self.template.SYSTEM_PROMPTS["explainability"]
+            prompt=prompt, system_prompt=self.template.SYSTEM_PROMPTS["explainability"]
         )
-        
+
         return self.send_message(
             receiver=AgentRole.ANALYST,  # Complete the cycle
             content=explanation,
-            metadata=evidence
+            metadata=evidence,
         )
 
 
 class MultiAgentOrchestrator:
     """Orchestrates multi-agent trading system."""
-    
+
     def __init__(self, llm_config: LLMConfig, agent_config: Optional[Dict] = None):
         self.llm = LLMWrapper(llm_config)
         self.agent_config = agent_config or {}
-        
+
         # Initialize agents
         self.analyst = AnalystAgent(self.llm, self.agent_config.get("analyst"))
         self.decision_maker = DecisionAgent(self.llm, self.agent_config.get("decision"))
         self.risk_manager = RiskAgent(self.llm, self.agent_config.get("risk"))
         self.executor = ExecutionAgent(self.llm, self.agent_config.get("execution"))
-        self.explainer = ExplainabilityAgent(self.llm, self.agent_config.get("explainability"))
-        
+        self.explainer = ExplainabilityAgent(
+            self.llm, self.agent_config.get("explainability")
+        )
+
         self.message_log: List[AgentMessage] = []
-    
+
     def run_cycle(self, context: TradingContext) -> Dict[str, Any]:
         """
         Run one complete agent cycle.
-        
+
         Returns:
             Dictionary with decision, execution, and explanation
         """
         logger.info(f"Running agent cycle for {context.ticker} at {context.timestamp}")
-        
+
         # Step 1: Analysis
         analysis_msg = self.analyst.process(context)
         self.message_log.append(analysis_msg)
-        
+
         # Step 2: Decision
         decision_msg, decision = self.decision_maker.process(context, analysis_msg)
         self.message_log.append(decision_msg)
-        
+
         # Step 3: Risk check
         risk_msg, approved = self.risk_manager.process(context, decision_msg)
         self.message_log.append(risk_msg)
-        
+
         if not approved:
             logger.warning(f"Decision rejected by risk manager: {decision}")
             return {
@@ -439,25 +434,27 @@ class MultiAgentOrchestrator:
                 "approved": False,
                 "execution": None,
                 "explanation": "Decision rejected by risk management",
-                "messages": self.message_log[-3:]
+                "messages": self.message_log[-3:],
             }
-        
+
         # Step 4: Execution
         exec_msg, execution = self.executor.process(context, decision_msg, risk_msg)
         self.message_log.append(exec_msg)
-        
+
         # Step 5: Explanation
-        explain_msg = self.explainer.process(context, analysis_msg, decision_msg, exec_msg)
+        explain_msg = self.explainer.process(
+            context, analysis_msg, decision_msg, exec_msg
+        )
         self.message_log.append(explain_msg)
-        
+
         return {
             "decision": decision,
             "approved": True,
             "execution": execution,
             "explanation": explain_msg.content,
-            "messages": self.message_log[-5:]
+            "messages": self.message_log[-5:],
         }
-    
+
     def get_message_log(self) -> List[AgentMessage]:
         """Return full message log."""
         return self.message_log
@@ -467,7 +464,7 @@ if __name__ == "__main__":
     # Test orchestrator
     llm_config = LLMConfig(backend="mock")
     orchestrator = MultiAgentOrchestrator(llm_config)
-    
+
     # Create test context
     context = TradingContext(
         ticker="AAPL",
@@ -482,14 +479,14 @@ if __name__ == "__main__":
             "sentiment_mean": 0.6,
             "news_count": 5,
             "DFF": 5.25,
-            "VIXCLS": 15.2
+            "VIXCLS": 15.2,
         },
-        news=[]
+        news=[],
     )
-    
+
     # Run cycle
     result = orchestrator.run_cycle(context)
-    
+
     print("\n=== Agent Cycle Result ===")
     print(f"Decision: {result['decision']}")
     print(f"Approved: {result['approved']}")
