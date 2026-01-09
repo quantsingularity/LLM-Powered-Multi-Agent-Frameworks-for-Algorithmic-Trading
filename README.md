@@ -61,8 +61,6 @@ llm-trading-research/
 │   ├── metrics/                  # Performance metrics (JSON/CSV)
 │   ├── logs/                     # Execution logs
 │   └── checkpoints/              # Trained model weights
-├── paper_ml/                      # ML-focused paper (LaTeX)
-├── paper_finance/                 # Finance-focused paper (LaTeX)
 ├── tests/                         # Unit & integration tests
 ├── docker/                        # Docker configuration
 ├── Dockerfile                     # Container definition
