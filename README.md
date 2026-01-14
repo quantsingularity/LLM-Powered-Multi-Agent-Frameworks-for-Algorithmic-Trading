@@ -3,6 +3,7 @@
 ## 📊 Quick Pilot Results
 
 **Experiment Configuration:**
+
 - **Tickers**: AAPL, MSFT (2 assets)
 - **Period**: 2024-01-01 to 2024-12-31 (1 year)
 - **Data**: Synthetic (GBM with realistic statistical properties)
@@ -11,12 +12,13 @@
 
 ### Performance Metrics (Hybrid LLM+RL Agent)
 
-| Ticker | Total Return | Sharpe Ratio | Max Drawdown | Win Rate | Trades |
-|--------|--------------|--------------|--------------|----------|--------|
-| **AAPL** | -4.04% | -1.80 | -4.66% | 42.41% | 316 |
-| **MSFT** | -4.19% | -2.13 | -5.34% | 37.34% | 316 |
+| Ticker   | Total Return | Sharpe Ratio | Max Drawdown | Win Rate | Trades |
+| -------- | ------------ | ------------ | ------------ | -------- | ------ |
+| **AAPL** | -4.04%       | -1.80        | -4.66%       | 42.41%   | 316    |
+| **MSFT** | -4.19%       | -2.13        | -5.34%       | 37.34%   | 316    |
 
 **Note**: Negative returns are expected in this quick pilot due to:
+
 1. **Limited training** (5k timesteps vs. 100k+ for publication results)
 2. **Synthetic data** (no real market alpha signals)
 3. **Mock LLM backend** (deterministic responses, not adaptive)
@@ -116,14 +118,14 @@ python run_experiment.py
 ```yaml
 seed: 42
 data:
-  source: synthetic  # Fast, no API keys needed
+  source: synthetic # Fast, no API keys needed
   tickers: [AAPL, MSFT]
-  start_date: '2024-01-01'
-  end_date: '2024-12-31'
+  start_date: "2024-01-01"
+  end_date: "2024-12-31"
 llm:
-  backend: mock  # Deterministic, no API costs
+  backend: mock # Deterministic, no API costs
 rl:
-  timesteps: 5000  # ~2 minutes training
+  timesteps: 5000 # ~2 minutes training
 ```
 
 ### Full Experiment (Publication Quality)
@@ -131,18 +133,19 @@ rl:
 ```yaml
 seed: 42
 data:
-  source: yahoo  # Real market data
-  tickers: [AAPL, MSFT, GOOGL, AMZN, META, TSLA, NVDA, JPM]  # 8 assets
-  start_date: '2020-01-01'
-  end_date: '2024-12-31'
+  source: yahoo # Real market data
+  tickers: [AAPL, MSFT, GOOGL, AMZN, META, TSLA, NVDA, JPM] # 8 assets
+  start_date: "2020-01-01"
+  end_date: "2024-12-31"
 llm:
-  backend: openai  # GPT-4 for reasoning
+  backend: openai # GPT-4 for reasoning
   model_name: gpt-4-turbo
 rl:
-  timesteps: 100000  # ~4-8 hours with GPU
+  timesteps: 100000 # ~4-8 hours with GPU
 ```
 
 **API Keys Required for Full Experiment:**
+
 ```bash
 export OPENAI_API_KEY="sk-..."          # For GPT-4 reasoning
 export FRED_API_KEY="..."               # For macro data (free)
@@ -230,11 +233,11 @@ pytest tests/ --cov=code --cov-report=html
 
 ### Real Data Sources (Full Experiment)
 
-| Source | Data Type | License | API Key Required |
-|--------|-----------|---------|------------------|
-| Yahoo Finance | OHLCV | Free for non-commercial | No |
-| FRED (St. Louis Fed) | Macro indicators | Public domain | Yes (free) |
-| SEC EDGAR | Company filings | Public domain | No |
+| Source               | Data Type        | License                 | API Key Required |
+| -------------------- | ---------------- | ----------------------- | ---------------- |
+| Yahoo Finance        | OHLCV            | Free for non-commercial | No               |
+| FRED (St. Louis Fed) | Macro indicators | Public domain           | Yes (free)       |
+| SEC EDGAR            | Company filings  | Public domain           | No               |
 
 ### Synthetic Data (Quick Pilot)
 
@@ -267,6 +270,7 @@ pip freeze > requirements_frozen.txt
 ### Seeds & Determinism
 
 All randomness is controlled:
+
 ```python
 SEED = 42
 np.random.seed(SEED)
@@ -276,13 +280,14 @@ env.reset(seed=SEED)
 
 ### Compute Requirements
 
-| Experiment | CPU | GPU | RAM | Time |
-|------------|-----|-----|-----|------|
-| Quick Pilot | 4 cores | Optional | 8GB | 2 min |
-| Full (No GPU) | 8 cores | No | 16GB | 12 hrs |
-| Full (With GPU) | 4 cores | RTX 3090 | 16GB | 4 hrs |
+| Experiment      | CPU     | GPU      | RAM  | Time   |
+| --------------- | ------- | -------- | ---- | ------ |
+| Quick Pilot     | 4 cores | Optional | 8GB  | 2 min  |
+| Full (No GPU)   | 8 cores | No       | 16GB | 12 hrs |
+| Full (With GPU) | 4 cores | RTX 3090 | 16GB | 4 hrs  |
 
 **Estimated Cost (AWS)**:
+
 - Quick Pilot: $0.01 (CPU spot instance)
 - Full Experiment: $2-5 (GPU spot instance)
 
@@ -293,6 +298,7 @@ env.reset(seed=SEED)
 ### Common Issues
 
 **1. CUDA Out of Memory**
+
 ```bash
 # Reduce batch size in config
 rl:
@@ -300,6 +306,7 @@ rl:
 ```
 
 **2. API Rate Limits (OpenAI)**
+
 ```bash
 # Use local model or increase retry delays
 llm:
@@ -308,6 +315,7 @@ llm:
 ```
 
 **3. Slow Training**
+
 ```bash
 # Use smaller dataset or reduce timesteps
 rl:
