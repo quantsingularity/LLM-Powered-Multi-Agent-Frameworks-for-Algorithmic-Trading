@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install Python formatters
-        run: pip install --upgrade pip && pip install autoflake black
+        run: pip install --upgrade pip && pip install autoflake==2.3.1 black==25.11.0
 
       # -------------------------------
       # Run Python formatting checks
