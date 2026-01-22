@@ -14,6 +14,13 @@ logger = logging.getLogger(__name__)
 
 # Try importing LLM libraries
 try:
+    import litellm
+
+    LITELLM_AVAILABLE = True
+except ImportError:
+    LITELLM_AVAILABLE = False
+
+try:
     import openai
 
     OPENAI_AVAILABLE = True
@@ -43,7 +50,7 @@ except ImportError:
 class LLMConfig:
     """Configuration for LLM backend."""
 
-    backend: str = "local"  # "openai", "anthropic", "local", "mock"
+    backend: str = "local"  # "litellm", "openai", "anthropic", "local", "mock"
     model_name: str = "gpt-3.5-turbo"
     temperature: float = 0.7
     max_tokens: int = 512
@@ -58,6 +65,10 @@ class LLMWrapper:
         self.config = config
         self.backend = config.backend
 
+        if self.backend == "litellm":
+            self._init_litellm()
+        elif self.backend == "litellm":
+            return self._generate_litellm(prompt, system_prompt, **kwargs)
         if self.backend == "openai":
             self._init_openai()
         elif self.backend == "anthropic":
@@ -68,6 +79,15 @@ class LLMWrapper:
             self._init_mock()
         else:
             raise ValueError(f"Unknown backend: {self.backend}")
+
+    def _init_litellm(self):
+        """Initialize LiteLLM router (multi-provider)."""
+        if not LITELLM_AVAILABLE:
+            logger.warning("LiteLLM not available, falling back to mock")
+            self.backend = "mock"
+            self._init_mock()
+            return
+        logger.info(f"Initialized LiteLLM backend with model {self.config.model_name}")
 
     def _init_openai(self):
         """Initialize OpenAI client."""
@@ -151,6 +171,10 @@ class LLMWrapper:
         Returns:
             Generated text
         """
+        if self.backend == "litellm":
+            self._init_litellm()
+        elif self.backend == "litellm":
+            return self._generate_litellm(prompt, system_prompt, **kwargs)
         if self.backend == "openai":
             return self._generate_openai(prompt, system_prompt, **kwargs)
         elif self.backend == "anthropic":
@@ -159,6 +183,22 @@ class LLMWrapper:
             return self._generate_local(prompt, system_prompt, **kwargs)
         elif self.backend == "mock":
             return self._generate_mock(prompt, system_prompt, **kwargs)
+
+    def _generate_litellm(
+        self, prompt: str, system_prompt: Optional[str], **kwargs
+    ) -> str:
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+        resp = litellm.completion(
+            model=self.config.model_name,
+            messages=messages,
+            temperature=kwargs.get("temperature", self.config.temperature),
+            max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
+            top_p=kwargs.get("top_p", self.config.top_p),
+        )
+        return resp["choices"][0]["message"]["content"]
 
     def _generate_openai(
         self, prompt: str, system_prompt: Optional[str], **kwargs

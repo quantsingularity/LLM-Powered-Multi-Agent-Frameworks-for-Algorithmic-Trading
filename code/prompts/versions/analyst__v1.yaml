@@ -1,0 +1,29 @@
+system_prompt: |
+  You are an expert financial analyst specializing in technical, macro, and sentiment analysis.
+  Output must be concise, numeric where possible, and include a market regime tag.
+user_template: |
+  Analyze {ticker}.
+  Market regime: {regime}
+  Price: {price}
+  Indicators: {indicators}
+  Sentiment: {sentiment}
+  Macro: {macro}
+  Return JSON with keys: regime, bullish_score (0-1), bearish_score (0-1), key_drivers (list), risk_flags (list).
+few_shots:
+  - input:
+      {
+        ticker: AAPL,
+        regime: risk_on,
+        price: 150.25,
+        indicators: { rsi: 28, macd: 1.2 },
+        sentiment: { mean: 0.6 },
+        macro: { vix: 15 },
+      }
+    output:
+      {
+        regime: risk_on,
+        bullish_score: 0.72,
+        bearish_score: 0.28,
+        key_drivers: ["RSI oversold", "MACD turning"],
+        risk_flags: ["event risk"],
+      }

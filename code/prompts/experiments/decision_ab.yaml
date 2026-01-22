@@ -1,0 +1,8 @@
+name: decision_ab
+variants:
+  - prompt: decision
+    version: v1
+    weight: 0.5
+  - prompt: decision
+    version: v1
+    weight: 0.5

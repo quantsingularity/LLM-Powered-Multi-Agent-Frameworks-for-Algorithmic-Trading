@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Add code directory to path
-sys.path.insert(0, "/workspace/code")
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), ".")))
 
 from data.market_data_loader import (
     MarketDataLoader,

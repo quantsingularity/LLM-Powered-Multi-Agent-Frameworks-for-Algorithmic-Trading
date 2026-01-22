@@ -66,3 +66,10 @@ aiohttp==3.9.1
 
 # Experiment tracking
 mlflow==2.9.2
+shap==0.45.0
+alibi==0.9.6
+litellm==1.52.3
+alpaca-py==0.24.0
+ib_insync==0.9.86
+pydantic==2.6.1
+rich==13.7.1

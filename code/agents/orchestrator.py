@@ -12,6 +12,8 @@ import pandas as pd
 import numpy as np
 
 from models.llm_wrapper import LLMWrapper, LLMConfig, PromptTemplate
+from risk.risk_manager import RiskManager, RiskConfig
+from prompts.prompt_registry import PromptRegistry
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -186,6 +188,14 @@ class DecisionAgent(BaseAgent):
         )
 
     def _parse_decision(self, decision_text: str) -> Dict[str, Any]:
+        import json
+
+        try:
+            j = json.loads(decision_text)
+            if isinstance(j, dict) and "action" in j:
+                return {**j, "raw_text": decision_text}
+        except Exception:
+            pass
         """Parse decision text into structured format."""
         # Simple parsing of "ACTION SIZE" format
         parts = decision_text.strip().split()
@@ -244,7 +254,7 @@ class RiskAgent(BaseAgent):
         # Risk checks
         checks = {
             "position_limit": position_pct <= self.max_position,
-            "position_positive": new_position >= 0,  # No short selling in this version
+            "position_positive": new_position >= 0,
         }
 
         approved = all(checks.values())
@@ -393,6 +403,8 @@ class MultiAgentOrchestrator:
 
     def __init__(self, llm_config: LLMConfig, agent_config: Optional[Dict] = None):
         self.llm = LLMWrapper(llm_config)
+        self.prompt_registry = PromptRegistry()
+        self.risk_manager = RiskManager(RiskConfig())
         self.agent_config = agent_config or {}
 
         # Initialize agents
