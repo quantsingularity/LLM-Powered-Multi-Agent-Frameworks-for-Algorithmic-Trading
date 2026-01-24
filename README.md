@@ -2,7 +2,7 @@
 
 ## 🎯 Project Overview
 
-This repository presents a **state-of-the-art, production-ready multi-agent system** designed to revolutionize algorithmic trading. The framework integrates the advanced reasoning capabilities of Large Language Models (LLMs) with the execution precision of Reinforcement Learning (RL) to create auditable, high-performance trading strategies. The system operates through a hierarchical structure of specialized agents—Analyst, Decision, Risk, and Execution that process multi modal market data and communicate via structured messages to make and execute trades.
+This repository presents a **state-of-the-art, production-ready multi-agent system** designed to revolutionize algorithmic trading. The framework integrates the advanced reasoning capabilities of Large Language Models (LLMs) with the execution precision of Reinforcement Learning (RL) to create auditable, high-performance trading strategies. The system operates through a hierarchical structure of specialized agents Analyst, Decision, Risk, and Execution that process multi modal market data and communicate via structured messages to make and execute trades.
 
 The primary goal is to bridge the gap between LLM-driven high-level strategy and the low-latency, quantitative demands of real-world trading, while providing full transparency through an Explainable AI (XAI) layer.
 
